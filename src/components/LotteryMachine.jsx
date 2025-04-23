@@ -4,10 +4,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Ball from './Ball';
 import Confetti from './Confetti';
 
+// 增强的随机数生成函数，使用当前时间作为额外的随机因子
 const pickNumbers = (count, max) => {
     const set = new Set();
+    const now = new Date();
+    // 使用当前时间的毫秒数作为额外的随机因子
+    const timeSeed = now.getMilliseconds() / 1000;
+
     while (set.size < count) {
-        set.add(Math.floor(Math.random() * max) + 1);
+        // 结合时间因子和标准随机数
+        const randomValue = (Math.random() + timeSeed) % 1;
+        set.add(Math.floor(randomValue * max) + 1);
     }
     return [...set];
 };
