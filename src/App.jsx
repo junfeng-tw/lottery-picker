@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { Spin } from 'antd';
 import LotteryMachine from './components/LotteryMachine';
 import History from './components/History';
 import OfficialResults from './components/OfficialResults';
@@ -13,6 +14,8 @@ const MAX_HISTORY_ITEMS = 20;
 function App() {
     const [history, setHistory] = useState([]);
     const [luckyQuote, setLuckyQuote] = useState('');
+    const [currentDrawInfo, setCurrentDrawInfo] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     // 幸运语录数组
     const luckyQuotes = [
@@ -28,8 +31,55 @@ function App() {
         "这一刻，幸运女神正在向你微笑！"
     ];
 
-    // 从本地存储加载历史记录并随机选择一条幸运语录
+    // 获取最新一期开奖信息并计算下一期
     useEffect(() => {
+        const fetchLatestDrawInfo = async () => {
+            setLoading(true);
+            try {
+                // 从体彩官方API获取数据
+                const response = await fetch(
+                    'https://webapi.sporttery.cn/gateway/lottery/getHistoryPageListV1.qry?gameNo=85&provinceId=0&pageSize=1&isVerify=1&pageNo=1'
+                );
+                const data = await response.json();
+
+                if (data.success && data.value && data.value.list && data.value.list.length > 0) {
+                    const latestDraw = data.value.list[0];
+                    const drawNum = latestDraw.lotteryDrawNum;
+
+                    // 计算下一期期号
+                    // 大乐透期号格式为年份后两位+期号，如 23001
+                    const year = drawNum.substring(0, 2);
+                    const issue = parseInt(drawNum.substring(2));
+
+                    let nextIssue;
+                    let nextYear = year;
+
+                    // 处理跨年情况，假设每年最后一期是154期
+                    if (issue >= 154) {
+                        nextIssue = 1;
+                        nextYear = (parseInt(year) + 1).toString().padStart(2, '0');
+                    } else {
+                        nextIssue = issue + 1;
+                    }
+
+                    const nextDrawNum = nextYear + nextIssue.toString().padStart(3, '0');
+
+                    setCurrentDrawInfo({
+                        latestDrawNum: drawNum,
+                        nextDrawNum: nextDrawNum,
+                        latestDrawDate: latestDraw.lotteryDrawTime,
+                        latestDrawResult: latestDraw.lotteryDrawResult
+                    });
+                }
+            } catch (error) {
+                console.error('获取开奖信息失败:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchLatestDrawInfo();
+
         // 加载历史记录
         try {
             const savedHistory = localStorage.getItem(HISTORY_STORAGE_KEY);
@@ -54,10 +104,15 @@ function App() {
         setLuckyQuote(luckyQuotes[randomIndex]);
     }, []);
 
-    const handleFinish = (result) => {
+    const handleFinish = (result, drawNum) => {
         // 更新状态中的历史记录，保留最近的MAX_HISTORY_ITEMS条
+        const resultWithDrawNum = {
+            ...result,
+            drawNum: drawNum || (currentDrawInfo ? currentDrawInfo.nextDrawNum : '未知期号')
+        };
+
         setHistory((h) => {
-            const newHistory = [result, ...h.slice(0, MAX_HISTORY_ITEMS - 1)];
+            const newHistory = [resultWithDrawNum, ...h.slice(0, MAX_HISTORY_ITEMS - 1)];
 
             // 保存到本地存储
             try {
@@ -206,9 +261,17 @@ function App() {
                     <span style={{ fontSize: 18 }}>"{luckyQuote}"</span>
                 </motion.div>
 
-                <LotteryMachine onFinish={handleFinish} />
-                <History history={history} />
-                <OfficialResults />
+                {loading ? (
+                    <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                        <Spin tip="加载中..." size="large" />
+                    </div>
+                ) : (
+                    <>
+                        <LotteryMachine onFinish={handleFinish} currentDrawInfo={currentDrawInfo} />
+                        <History history={history} />
+                        <OfficialResults />
+                    </>
+                )}
 
                 {/* 底部信息 */}
                 <motion.div

@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from 'antd';
+import { Button, Select, Form, InputNumber, Space, Typography } from 'antd';
 import { motion, AnimatePresence } from 'framer-motion';
 import Ball from './Ball';
 import Confetti from './Confetti';
+
+const { Option } = Select;
+const { Text } = Typography;
 
 // 增强的随机数生成函数，使用当前时间作为额外的随机因子
 const pickNumbers = (count, max) => {
@@ -19,13 +22,15 @@ const pickNumbers = (count, max) => {
     return [...set];
 };
 
-const LotteryMachine = ({ onFinish }) => {
+const LotteryMachine = ({ onFinish, currentDrawInfo }) => {
     const [frontBalls, setFrontBalls] = useState([]);
     const [backBalls, setBackBalls] = useState([]);
     const [rolling, setRolling] = useState(false);
     const [showConfetti, setShowConfetti] = useState(false);
     const [machineActive, setMachineActive] = useState(false);
     const [progress, setProgress] = useState(0);
+    const [selectedDrawNum, setSelectedDrawNum] = useState(null);
+    const [customDrawNum, setCustomDrawNum] = useState('');
 
     // Reset progress when rolling stops
     useEffect(() => {
@@ -33,6 +38,36 @@ const LotteryMachine = ({ onFinish }) => {
             setProgress(0);
         }
     }, [rolling]);
+
+    // 当获取到当前期号信息时，默认选择下一期
+    useEffect(() => {
+        if (currentDrawInfo && currentDrawInfo.nextDrawNum) {
+            setSelectedDrawNum(currentDrawInfo.nextDrawNum);
+        }
+    }, [currentDrawInfo]);
+
+    // 处理期号选择变化
+    const handleDrawNumChange = (value) => {
+        if (value === 'custom') {
+            setSelectedDrawNum('custom');
+        } else {
+            setSelectedDrawNum(value);
+            setCustomDrawNum('');
+        }
+    };
+
+    // 处理自定义期号输入
+    const handleCustomDrawNumChange = (value) => {
+        setCustomDrawNum(value);
+    };
+
+    // 获取当前选择的期号
+    const getCurrentDrawNum = () => {
+        if (selectedDrawNum === 'custom' && customDrawNum) {
+            return customDrawNum;
+        }
+        return selectedDrawNum || (currentDrawInfo ? currentDrawInfo.nextDrawNum : '未知期号');
+    };
 
     const startLottery = async () => {
         setRolling(true);
@@ -74,7 +109,7 @@ const LotteryMachine = ({ onFinish }) => {
         setMachineActive(false);
         setShowConfetti(true);
         setRolling(false);
-        onFinish({ front, back, date: new Date() });
+        onFinish({ front, back, date: new Date() }, getCurrentDrawNum());
     };
 
     // Machine animation variants
@@ -130,13 +165,47 @@ const LotteryMachine = ({ onFinish }) => {
                     <h2 style={{ color: 'gold', margin: 0, textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>🎰 大乐透摇奖机 🎰</h2>
                 </div>
 
-                {/* Control button */}
+                {/* 期号选择和控制按钮 */}
                 <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                    <Space direction="vertical" style={{ width: '100%', marginBottom: 15 }}>
+                        <Text strong>选择要摇号的期数：</Text>
+                        <Space>
+                            <Select
+                                value={selectedDrawNum}
+                                onChange={handleDrawNumChange}
+                                style={{ width: 120 }}
+                                disabled={rolling}
+                            >
+                                {currentDrawInfo && (
+                                    <Option value={currentDrawInfo.nextDrawNum}>
+                                        第{currentDrawInfo.nextDrawNum}期
+                                    </Option>
+                                )}
+                                {currentDrawInfo && (
+                                    <Option value={currentDrawInfo.latestDrawNum}>
+                                        第{currentDrawInfo.latestDrawNum}期
+                                    </Option>
+                                )}
+                                <Option value="custom">自定义期号</Option>
+                            </Select>
+
+                            {selectedDrawNum === 'custom' && (
+                                <InputNumber
+                                    placeholder="输入期号"
+                                    value={customDrawNum}
+                                    onChange={handleCustomDrawNumChange}
+                                    style={{ width: 120 }}
+                                    disabled={rolling}
+                                />
+                            )}
+                        </Space>
+                    </Space>
+
                     <Button
                         type="primary"
                         size="large"
                         onClick={startLottery}
-                        disabled={rolling}
+                        disabled={rolling || (selectedDrawNum === 'custom' && !customDrawNum)}
                         style={{
                             background: rolling ? '#faad14' : '#1890ff',
                             borderColor: rolling ? '#d48806' : '#096dd9',
@@ -144,7 +213,7 @@ const LotteryMachine = ({ onFinish }) => {
                             boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
                         }}
                     >
-                        {rolling ? '摇奖中...' : '🎮 开始摇奖'}
+                        {rolling ? '摇奖中...' : `🎮 开始摇奖 (第${getCurrentDrawNum()}期)`}
                     </Button>
                 </div>
 
