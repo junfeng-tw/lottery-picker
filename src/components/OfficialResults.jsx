@@ -3,7 +3,7 @@ import { Card, List, Pagination, Tag, Tooltip, Spin } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
-const OfficialResults = () => {
+const OfficialResults = ({ setLotteryData: setParentLotteryData }) => {
     const [lotteryData, setLotteryData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
@@ -39,6 +39,10 @@ const OfficialResults = () => {
                         };
                     });
                     setLotteryData(formattedData);
+                    // 同时更新父组件的状态
+                    if (typeof setParentLotteryData === 'function') {
+                        setParentLotteryData(formattedData);
+                    }
                 }
             } catch (error) {
                 console.error('获取开奖数据失败:', error);

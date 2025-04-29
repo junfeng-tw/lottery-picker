@@ -16,6 +16,7 @@ function App() {
     const [luckyQuote, setLuckyQuote] = useState('');
     const [currentDrawInfo, setCurrentDrawInfo] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [officialLotteryData, setOfficialLotteryData] = useState([]);
 
     // 幸运语录数组
     const luckyQuotes = [
@@ -268,8 +269,8 @@ function App() {
                 ) : (
                     <>
                         <LotteryMachine onFinish={handleFinish} currentDrawInfo={currentDrawInfo} />
-                        <History history={history} />
-                        <OfficialResults />
+                        <History history={history} lotteryData={officialLotteryData} />
+                        <OfficialResults setLotteryData={setOfficialLotteryData} />
                     </>
                 )}
 
