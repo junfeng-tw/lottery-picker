@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import LotteryMachine from './components/LotteryMachine';
 import History from './components/History';
+import OfficialResults from './components/OfficialResults';
 
 // 本地存储的键名
 const HISTORY_STORAGE_KEY = 'lottery_history';
@@ -207,6 +208,7 @@ function App() {
 
                 <LotteryMachine onFinish={handleFinish} />
                 <History history={history} />
+                <OfficialResults />
 
                 {/* 底部信息 */}
                 <motion.div
