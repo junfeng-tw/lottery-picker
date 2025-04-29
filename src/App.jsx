@@ -78,15 +78,26 @@ function App() {
             minHeight: '100vh',
             width: '100%',
             background: 'linear-gradient(135deg, #000428 0%, #004e92 100%)',
+            backgroundAttachment: 'fixed', // 固定背景，防止滚动时出现问题
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             padding: '20px 10px',
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            overflowY: 'auto' // 允许内容滚动
         }}>
             {/* 背景动画元素 */}
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden', zIndex: 0 }}>
+            <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                overflow: 'hidden',
+                zIndex: 0,
+                pointerEvents: 'none' // 确保背景元素不影响点击
+            }}>
                 {Array.from({ length: 20 }).map((_, i) => (
                     <motion.div
                         key={`star-${i}`}
@@ -152,7 +163,9 @@ function App() {
                 zIndex: 1,
                 display: 'flex',
                 flexDirection: 'column',
-                alignItems: 'center'
+                alignItems: 'center',
+                position: 'relative', // 确保内容区域正确定位
+                paddingBottom: '30px' // 添加底部空间，防止内容被底部元素遮挡
             }}>
                 <motion.h1
                     initial={{ y: -50, opacity: 0 }}

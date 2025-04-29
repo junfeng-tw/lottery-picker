@@ -1,12 +1,26 @@
-body {
-  background-color: #ffefef;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+  background-color: #000428; /* 与App.jsx中的背景渐变色起始颜色相同 */
   font-family: 'Arial', sans-serif;
+  overscroll-behavior: none; /* 防止iOS上的橡皮筋效果 */
 }
 
 #root {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-height: 100vh;
+  justify-content: flex-start;
+  min-height: 100%;
+  width: 100%;
+  overflow-x: hidden;
 }
