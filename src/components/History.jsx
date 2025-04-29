@@ -41,7 +41,7 @@ const History = ({ history, lotteryData }) => {
                     // 匹配球的样式已经在CSS动画中定义
                 }}
             >
-                {number}
+                {String(number).padStart(2, '0')}
             </div>
         );
     };
@@ -106,9 +106,12 @@ const History = ({ history, lotteryData }) => {
 
         const prizeResult = calculatePrizeLevel(item.front, item.back, officialFront, officialBack);
 
-        // 找出匹配的号码
-        const matchedFront = item.front.filter(num => officialFront.includes(num.toString()));
-        const matchedBack = item.back.filter(num => officialBack.includes(num.toString()));
+        // 找出匹配的号码 - 比较数字值而非字符串
+        const officialFrontNumbers = officialFront.map(num => parseInt(num));
+        const officialBackNumbers = officialBack.map(num => parseInt(num));
+
+        const matchedFront = item.front.filter(num => officialFrontNumbers.includes(parseInt(num)));
+        const matchedBack = item.back.filter(num => officialBackNumbers.includes(parseInt(num)));
 
         const prizeColor = getPrizeLevelColor(prizeResult.level);
 
@@ -123,9 +126,19 @@ const History = ({ history, lotteryData }) => {
                 </div>
                 <p><strong>您选择的号码：</strong></p>
                 <div style={{ marginBottom: 10 }}>
-                    {item.front.sort((a,b)=>a-b).map(num => renderBall(num, 'front', matchedFront.includes(num)))}
+                    {item.front.sort((a,b)=>a-b).map(num => {
+                        // 使用数字值比较
+                        const numValue = parseInt(num);
+                        const isMatched = matchedFront.some(matchNum => parseInt(matchNum) === numValue);
+                        return renderBall(num, 'front', isMatched);
+                    })}
                     <span style={{ margin: '0 5px', color: '#888' }}>|</span>
-                    {item.back.sort((a,b)=>a-b).map(num => renderBall(num, 'back', matchedBack.includes(num)))}
+                    {item.back.sort((a,b)=>a-b).map(num => {
+                        // 使用数字值比较
+                        const numValue = parseInt(num);
+                        const isMatched = matchedBack.some(matchNum => parseInt(matchNum) === numValue);
+                        return renderBall(num, 'back', isMatched);
+                    })}
                 </div>
                 <p><strong>匹配结果：</strong></p>
                 <p>前区匹配：{matchedFront.length}个 / 后区匹配：{matchedBack.length}个</p>
@@ -259,7 +272,8 @@ const History = ({ history, lotteryData }) => {
 
                                         if (officialResult) {
                                             const officialFront = [officialResult.前1, officialResult.前2, officialResult.前3, officialResult.前4, officialResult.前5];
-                                            matched = officialFront.includes(num.toString());
+                                            const officialFrontNumbers = officialFront.map(n => parseInt(n));
+                                            matched = officialFrontNumbers.includes(parseInt(num));
                                         }
 
                                         return renderBall(num, 'front', matched);
@@ -271,7 +285,8 @@ const History = ({ history, lotteryData }) => {
 
                                         if (officialResult) {
                                             const officialBack = [officialResult.后1, officialResult.后2];
-                                            matched = officialBack.includes(num.toString());
+                                            const officialBackNumbers = officialBack.map(n => parseInt(n));
+                                            matched = officialBackNumbers.includes(parseInt(num));
                                         }
 
                                         return renderBall(num, 'back', matched);

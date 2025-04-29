@@ -87,7 +87,7 @@ const OfficialResults = ({ setLotteryData: setParentLotteryData }) => {
                     boxShadow: '0 2px 4px rgba(0,0,0,0.3), inset 0 -2px 3px rgba(0,0,0,0.2), inset 0 2px 3px rgba(255,255,255,0.2)'
                 }}
             >
-                {number}
+                {String(number).padStart(2, '0')}
             </div>
         );
     };

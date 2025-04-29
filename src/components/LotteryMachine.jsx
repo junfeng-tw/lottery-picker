@@ -289,7 +289,7 @@ const LotteryMachine = ({ onFinish, currentDrawInfo }) => {
                                                 fontSize: 12
                                             }}
                                         >
-                                            {Math.floor(Math.random() * 35) + 1}
+                                            {String(Math.floor(Math.random() * 35) + 1).padStart(2, '0')}
                                         </motion.div>
                                     ))}
                                 </div>
@@ -353,7 +353,7 @@ const LotteryMachine = ({ onFinish, currentDrawInfo }) => {
                                                 fontSize: 12
                                             }}
                                         >
-                                            {Math.floor(Math.random() * 12) + 1}
+                                            {String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}
                                         </motion.div>
                                     ))}
                                 </div>

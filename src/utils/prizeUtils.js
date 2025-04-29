@@ -7,7 +7,7 @@
  * @returns {Object} 中奖信息，包括等级和描述
  */
 export const calculatePrizeLevel = (userFront, userBack, officialFront, officialBack) => {
-    // 将字符串数组转换为数字数组
+    // 将字符串数组转换为数字数组，确保比较的是数字值而非字符串
     const userFrontNumbers = userFront.map(num => parseInt(num));
     const userBackNumbers = userBack.map(num => parseInt(num));
     const officialFrontNumbers = officialFront.map(num => parseInt(num));
@@ -34,7 +34,7 @@ export const calculatePrizeLevel = (userFront, userBack, officialFront, official
         return { level: 7, description: "七等奖" };
     } else if ((matchedFront === 3 && matchedBack === 1) || (matchedFront === 2 && matchedBack === 2)) {
         return { level: 8, description: "八等奖" };
-    } else if ((matchedFront === 3 && matchedBack === 0) || (matchedFront === 1 && matchedBack === 2) || 
+    } else if ((matchedFront === 3 && matchedBack === 0) || (matchedFront === 1 && matchedBack === 2) ||
                (matchedFront === 2 && matchedBack === 1) || (matchedFront === 0 && matchedBack === 2)) {
         return { level: 9, description: "九等奖" };
     } else {

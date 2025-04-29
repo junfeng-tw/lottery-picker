@@ -45,7 +45,7 @@ const Ball = ({ number, color }) => {
                 background: 'radial-gradient(circle at center, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 60%)',
                 borderRadius: '50%'
             }} />
-            {number}
+            {String(number).padStart(2, '0')}
         </motion.div>
     );
 };
