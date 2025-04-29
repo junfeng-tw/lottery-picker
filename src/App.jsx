@@ -3,6 +3,12 @@ import { motion } from 'framer-motion';
 import LotteryMachine from './components/LotteryMachine';
 import History from './components/History';
 
+// 本地存储的键名
+const HISTORY_STORAGE_KEY = 'lottery_history';
+
+// 最大历史记录数量
+const MAX_HISTORY_ITEMS = 20;
+
 function App() {
     const [history, setHistory] = useState([]);
     const [luckyQuote, setLuckyQuote] = useState('');
@@ -21,14 +27,47 @@ function App() {
         "这一刻，幸运女神正在向你微笑！"
     ];
 
-    // 随机选择一条幸运语录
+    // 从本地存储加载历史记录并随机选择一条幸运语录
     useEffect(() => {
+        // 加载历史记录
+        try {
+            const savedHistory = localStorage.getItem(HISTORY_STORAGE_KEY);
+            if (savedHistory) {
+                const parsedHistory = JSON.parse(savedHistory);
+                if (Array.isArray(parsedHistory) && parsedHistory.length > 0) {
+                    // 确保日期对象被正确恢复
+                    const processedHistory = parsedHistory.map(item => ({
+                        ...item,
+                        date: new Date(item.date)
+                    }));
+                    setHistory(processedHistory);
+                }
+            }
+        } catch (error) {
+            console.error('加载历史记录失败:', error);
+            // 如果加载失败，不影响应用继续运行
+        }
+
+        // 随机选择幸运语录
         const randomIndex = Math.floor(Math.random() * luckyQuotes.length);
         setLuckyQuote(luckyQuotes[randomIndex]);
     }, []);
 
     const handleFinish = (result) => {
-        setHistory((h) => [result, ...h.slice(0, 4)]);
+        // 更新状态中的历史记录，保留最近的MAX_HISTORY_ITEMS条
+        setHistory((h) => {
+            const newHistory = [result, ...h.slice(0, MAX_HISTORY_ITEMS - 1)];
+
+            // 保存到本地存储
+            try {
+                localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(newHistory));
+            } catch (error) {
+                console.error('保存历史记录失败:', error);
+            }
+
+            return newHistory;
+        });
+
         // 每次摇奖后更换幸运语录
         const randomIndex = Math.floor(Math.random() * luckyQuotes.length);
         setLuckyQuote(luckyQuotes[randomIndex]);
