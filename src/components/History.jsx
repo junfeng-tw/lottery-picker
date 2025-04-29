@@ -15,9 +15,16 @@ const History = ({ history, lotteryData }) => {
         const lightColor = type === 'front' ? '#ff8367' : '#ff6525';
         const darkColor = type === 'front' ? '#e54327' : '#d43500';
 
+        // 非匹配球的样式
+        const nonMatchedStyle = {
+            border: '2px solid gold',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.3), inset 0 -2px 3px rgba(0,0,0,0.2), inset 0 2px 3px rgba(255,255,255,0.2)'
+        };
+
         return (
             <div
                 key={`${type}-${number}`}
+                className={matched ? "matched-ball" : ""}
                 style={{
                     background: `radial-gradient(circle at 30% 30%, ${lightColor}, ${color} 60%, ${darkColor})`,
                     borderRadius: '50%',
@@ -29,17 +36,59 @@ const History = ({ history, lotteryData }) => {
                     color: '#fff',
                     fontSize: 14,
                     fontWeight: 'bold',
-                    border: matched ? '2px solid #00ff00' : '2px solid gold', // 匹配的号码使用绿色边框
                     margin: '0 3px',
-                    boxShadow: matched ?
-                        '0 0 8px #00ff00, inset 0 -2px 3px rgba(0,0,0,0.2), inset 0 2px 3px rgba(255,255,255,0.2)' :
-                        '0 2px 4px rgba(0,0,0,0.3), inset 0 -2px 3px rgba(0,0,0,0.2), inset 0 2px 3px rgba(255,255,255,0.2)'
+                    ...(!matched && nonMatchedStyle),
+                    // 匹配球的样式已经在CSS动画中定义
                 }}
             >
                 {number}
             </div>
         );
     };
+
+    // 添加全局样式到组件挂载时
+    useEffect(() => {
+        // 创建样式元素
+        const styleElement = document.createElement('style');
+        styleElement.innerHTML = `
+            @keyframes lottery-ball-pulse {
+                0% { box-shadow: 0 0 10px #FFD700, 0 0 20px rgba(255, 215, 0, 0.5), inset 0 -2px 3px rgba(0,0,0,0.2), inset 0 2px 3px rgba(255,255,255,0.2); }
+                50% { box-shadow: 0 0 15px #FFD700, 0 0 30px rgba(255, 215, 0, 0.7), inset 0 -2px 3px rgba(0,0,0,0.2), inset 0 2px 3px rgba(255,255,255,0.2); }
+                100% { box-shadow: 0 0 10px #FFD700, 0 0 20px rgba(255, 215, 0, 0.5), inset 0 -2px 3px rgba(0,0,0,0.2), inset 0 2px 3px rgba(255,255,255,0.2); }
+            }
+
+            @keyframes rainbow-border {
+                0% { border-color: #ff0000; }
+                14% { border-color: #ff7f00; }
+                28% { border-color: #ffff00; }
+                42% { border-color: #00ff00; }
+                56% { border-color: #0000ff; }
+                70% { border-color: #4b0082; }
+                84% { border-color: #9400d3; }
+                100% { border-color: #ff0000; }
+            }
+
+            @keyframes scale-pulse {
+                0% { transform: scale(1.05); }
+                50% { transform: scale(1.15); }
+                100% { transform: scale(1.05); }
+            }
+
+            .matched-ball {
+                animation: lottery-ball-pulse 1.5s infinite, rainbow-border 2s linear infinite, scale-pulse 1.5s infinite;
+                border-width: 3px;
+                border-style: solid;
+                z-index: 2;
+                position: relative;
+            }
+        `;
+        document.head.appendChild(styleElement);
+
+        // 清理函数
+        return () => {
+            document.head.removeChild(styleElement);
+        };
+    }, []);
 
     // 查找对应期号的官方开奖结果
     const findOfficialResult = (drawNum) => {
@@ -94,13 +143,18 @@ const History = ({ history, lotteryData }) => {
             <Popover
                 content={prizeDetails}
                 title={`第${item.drawNum}期开奖结果对比`}
-                placement="right"
+                placement="left"
                 overlayStyle={{ maxWidth: 300 }}
             >
                 <Tag
                     icon={<TrophyOutlined />}
                     color={prizeColor}
-                    style={{ cursor: 'pointer' }}
+                    style={{
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        boxShadow: prizeResult.level > 0 ? `0 0 5px ${prizeColor}` : 'none',
+                        padding: '4px 8px'
+                    }}
                 >
                     {prizeResult.level > 0 ? prizeResult.description : '未中奖'}
                 </Tag>
@@ -188,10 +242,12 @@ const History = ({ history, lotteryData }) => {
                     locale={{ emptyText: '暂无摇奖记录' }}
                     renderItem={(item) => (
                         <List.Item style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                            <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                                <div>
                                     <Tag color="#d40000">第{item.drawNum || '未知'}期</Tag>
                                     <span style={{ marginLeft: 8 }}>{dayjs(item.date).format('YYYY-MM-DD HH:mm:ss')}</span>
+                                </div>
+                                <div>
                                     {findOfficialResult(item.drawNum) && renderPrizeResult(item)}
                                 </div>
                             </div>
