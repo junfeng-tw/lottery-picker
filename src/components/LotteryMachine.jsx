@@ -3,24 +3,12 @@ import { Button, Select, Form, InputNumber, Space, Typography } from 'antd';
 import { motion, AnimatePresence } from 'framer-motion';
 import Ball from './Ball';
 import Confetti from './Confetti';
+import { generateLotteryNumbers } from '../utils/randomUtils';
 
 const { Option } = Select;
 const { Text } = Typography;
 
-// 增强的随机数生成函数，使用当前时间作为额外的随机因子
-const pickNumbers = (count, max) => {
-    const set = new Set();
-    const now = new Date();
-    // 使用当前时间的毫秒数作为额外的随机因子
-    const timeSeed = now.getMilliseconds() / 1000;
-
-    while (set.size < count) {
-        // 结合时间因子和标准随机数
-        const randomValue = (Math.random() + timeSeed) % 1;
-        set.add(Math.floor(randomValue * max) + 1);
-    }
-    return [...set];
-};
+// 使用高级随机数生成工具从 randomUtils.js 中导入
 
 const LotteryMachine = ({ onFinish, currentDrawInfo }) => {
     const [frontBalls, setFrontBalls] = useState([]);
@@ -79,9 +67,8 @@ const LotteryMachine = ({ onFinish, currentDrawInfo }) => {
         // Start the machine animation
         setMachineActive(true);
 
-        // Generate numbers but don't show them yet
-        const front = pickNumbers(5, 35);
-        const back = pickNumbers(2, 12);
+        // 使用高级随机数生成器生成号码
+        const { front, back } = generateLotteryNumbers(5, 35, 2, 12);
         const totalBalls = front.length + back.length;
         let drawnCount = 0;
 
